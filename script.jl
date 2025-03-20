@@ -46,9 +46,8 @@ norm(J_RD - J_GTPSA) < 1e-13 # true
 
 
 # Another thing to consider is how to handle parametric lattice.
-# This will may be a bit of a challenge as the "helper" function we defined 
+# In this case, the "helper" function we defined 
 # above will also need to make the lattice parametric.
-
 
 # Let's define a function to calculate the jacobian of the map including 
 # one knob which controls both quadrupoles:
