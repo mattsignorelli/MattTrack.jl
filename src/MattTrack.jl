@@ -1,5 +1,5 @@
 module MattTrack
-export MattStandard, Params, LatticeElement, Bunch, make_lat, track!
+export MattStandard, Params, LatticeElement, Bunch, make_lat, track!, ParamDict, LengthParams, QuadParams
 
 using GTPSA
 import GTPSA: sincu, sinhcu
@@ -9,17 +9,9 @@ include("utils.jl")
 abstract type TrackingMethod end
 struct MattStandard <: TrackingMethod end
 
-# T can be TPSA or regular numbers or Duals etc
-struct Params{T <: Number}
-  Kn1::T
-  L::T
-end
+include("element.jl")
 
-mutable struct LatticeElement
-  params::Params
-  tracking_method::TrackingMethod
-end
-
+#=
 struct Bunch{T <: Number}
   x::Vector{T}
   px::Vector{T}
@@ -97,7 +89,7 @@ function track!(bunch::Bunch, ::MattStandard, params::Params, tmp=nothing)
   end
   return bunch
 end
-
+=#
 
 
 
