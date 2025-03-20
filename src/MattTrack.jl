@@ -79,11 +79,9 @@ function track!(bunch::Bunch, ::MattStandard, params::Params, tmp=nothing)
     end
 
     # One temporary array, for 1000 Floats is 3 allocations on Julia v1.11
-    
     if isnothing(tmp)
       tmp = zero(fq)
     end
-    #tmp = (eltype(fq)).(fq)
 
     # copy and copy! behavior by GTPSA may be modified in future (weirdness 
     # because TPS is mutable). For now 0 + with FastGTPSA! is workaround.
@@ -99,6 +97,7 @@ function track!(bunch::Bunch, ::MattStandard, params::Params, tmp=nothing)
   end
   return bunch
 end
+
 
 
 

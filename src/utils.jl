@@ -1,7 +1,7 @@
 # Functions for float by Dan Abell.
 # Modified by Matt to handle eps for different float types.
 
-function sincu(z::AbstractFloat)
+function sincu(z)
   threshold = sqrt(2*eps(z))
   if abs(z) < threshold
     return 1.
@@ -10,7 +10,7 @@ function sincu(z::AbstractFloat)
   end
 end
 
-function sinhcu(z::AbstractFloat)
+function sinhcu(z)
   threshold = sqrt(2*eps(z))
   if abs(z) < threshold
     return 1.
