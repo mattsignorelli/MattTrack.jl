@@ -1,5 +1,5 @@
 module MattTrack
-export MattStandard, Params, LatElement, Bunch, make_lat, track!, ParamDict, LengthParams, QuadParams
+export MattStandard, Parameters, LatElement, Bunch, make_lat, track!, ParamDict, LengthParams, QuadParams
 
 using GTPSA, Accessors
 import GTPSA: sincu, sinhcu
