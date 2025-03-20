@@ -1,23 +1,15 @@
-# T can be TPSA or regular numbers or Duals etc
+
 abstract type ParameterGroup end
-
-struct TrackParams end
-
-struct QuadParams{T <: Number} <: ParameterGroup
-  Kn1::T
-  tilt::T
-end
-
-struct LengthParams{T <: Number} <: ParameterGroup
-  L::T
-end
 
 const ParamDict = Dict{Type{<:ParameterGroup}, ParameterGroup}
 
 # Require that Symbol key is equivalent to the parameter group type name:
-Base.setindex!(h::ParamDict, v, key) = error("Key does not match parameter group type")
+Base.setindex!(h::ParamDict, v, key) = error("Incorrect key/value t ypes for ParamDict")
 
-function Base.setindex!(h::ParamDict, v::T, key::Type{<:T}) where {T<:ParameterGroup}
+function Base.setindex!(h::ParamDict, v::ParameterGroup, key::Type{<:ParameterGroup})
+  # 208 ns and 3 allocations
+  typeof(v) <: key || error("Key type $key does not match parameter group type $(typeof(v))")
+  # The following is copy-pasted directly from Base dict.jl ==========
   index, sh = Base.ht_keyindex2_shorthash!(h, key)
 
   if index > 0
@@ -29,46 +21,61 @@ function Base.setindex!(h::ParamDict, v::T, key::Type{<:T}) where {T<:ParameterG
   end
 
   return h
+  # ==================================================================
 end
-
-#=
 
 struct LatElement
-  params::Di
+  pdict::ParamDict
 end
 
-
-#=
-@kwdef mutable struct LatticeElement
-  pdict::Dict{Symbol, ParameterGroup} = Dict(:QuadParams=>QuadParams(0.36, pi/4), :LengthParams=>LengthParams(0.5))
+mutable struct QuadParams{T <: Number} <: ParameterGroup
+  Kn1::T
+  tilt::T
+  function QuadParams(Kn1, tilt)
+    return new{promote_type(typeof(Kn1), typeof(tilt))}(Kn1, tilt)
+  end
 end
-=#
-function Base.getproperty(ele::LatticeElement, key::Symbol)
-  if key == :tracking_method
-    return getfield(ele, :tracking_method)
-  elseif key == :pdict
+
+Base.eltype(pg::QuadParams{T}) where {T} = T
+
+mutable struct LengthParams{T <: Number} <: ParameterGroup
+  L::T
+end
+
+Base.eltype(pg::LengthParams{T}) where {T} = T
+
+function Base.getproperty(ele::LatElement, key::Symbol)
+  if key == :pdict
     return getfield(ele, :pdict)
   else
     return getindex(ele.pdict, PARAMETER_MAP[key])
-    #return getfield(pg, key)
-    #return getindex(ele.pdict, PARAMETER_MAP[key])
   end
 end
 
-function Base.setproperty!(ele::LatticeElement, key::Symbol, value)
-  if key == :tracking_method
-    setfield!(ele, :tracking_method, value)
-  elseif key == :pdict
-    setfield!(ele, :pdict, value)
+function Base.setproperty!(ele::LatElement, key::Symbol, value)
+  # Using immutable structs via Accessors.jl: time to update is 452 ns with 7 allocations, irregardless of type change
+  # ele.pdict[PARAMETER_MAP[key]] = set(ele.pdict[PARAMETER_MAP[key]], opcompose(PropertyLens(key)), value)
+
+  # With mutable structs, no type change WITH check: time to update is ~65 ns with 3 allocations
+  pg = getindex(ele.pdict, PARAMETER_MAP[key])
+  # Function barrier for speed
+  _setproperty!(ele.pdict, pg, key, value)
+end
+
+function _setproperty!(pdict::ParamDict, pg::ParameterGroup, key::Symbol, value)
+  T = eltype(pg)
+  if typeof(value) == T
+    return setfield!(pg, key, value)
+  elseif promote_type(typeof(value), T) == T # no promotion necessary
+    return setfield!(pg, key, T(value))
   else
-    pg = getindex(ele.pdict, PARAMETER_MAP[key])
-    setfield!(pg, key, value)
+    # Use Accessors here bc super convenient for replacing entire mutable type
+    pdict[PARAMETER_MAP[key]] = set(pdict[PARAMETER_MAP[key]], opcompose(PropertyLens(key)), value)
   end
 end
 
-const PARAMETER_MAP = Dict{Symbol,Symbol}(
-  :Kn1 => :QuadParams, 
-  :tilt => :QuadParams,
-  :L => :LengthParams
+const PARAMETER_MAP = Dict{Symbol,Type{<:ParameterGroup}}(
+  :Kn1 => QuadParams, 
+  :tilt => QuadParams,
+  :L => LengthParams
 )
-=#

@@ -1,14 +1,10 @@
 module MattTrack
-export MattStandard, Params, LatticeElement, Bunch, make_lat, track!, ParamDict, LengthParams, QuadParams
+export MattStandard, Params, LatElement, Bunch, make_lat, track!, ParamDict, LengthParams, QuadParams
 
-using GTPSA
+using GTPSA, Accessors
 import GTPSA: sincu, sinhcu
 
 include("utils.jl")
-
-abstract type TrackingMethod end
-struct MattStandard <: TrackingMethod end
-
 include("element.jl")
 
 #=
