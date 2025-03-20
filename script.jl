@@ -37,6 +37,12 @@ J_GTPSA_DI = jacobian(z->track_particle(z, lat), AutoGTPSA(), x0)
 
 J_GTPSA_DI == J_GTPSA # true
 
+# When using DifferentiationInterface with GTPSA, a Descriptor will be 
+# inferred based on the input/output arguments. Alternatively, one 
+# can be provided explicitly using AutoGTPSA(descriptor). It is the user's
+# responsibility in this case to ensure that the descriptor matches the 
+# input/output.
+
 # Now can easily use ForwardDiff or ReverseDiff:
 J_FD = jacobian(z->track_particle(z, lat), AutoForwardDiff(), x0)
 J_RD = jacobian(z->track_particle(z, lat), AutoReverseDiff(), x0)
