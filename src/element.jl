@@ -7,6 +7,7 @@ Base.setindex!(h::ParamDict, v, key) = error("Incorrect key/value types for Para
 
 function Base.setindex!(h::ParamDict, v::Parameters, key::Type{<:Parameters})
   # 208 ns and 3 allocations to check that we set correctly
+  # Parameter groups rarely added so perfectly fine
   typeof(v) <: key || error("Key type $key does not match parameters type $(typeof(v))")
   # The following is copy-pasted directly from Base dict.jl ==========
   index, sh = Base.ht_keyindex2_shorthash!(h, key)
@@ -23,8 +24,8 @@ function Base.setindex!(h::ParamDict, v::Parameters, key::Type{<:Parameters})
   # ==================================================================
 end
 
-struct LatElement
-  pdict::ParamDict
+@kwdef struct LatElement
+  pdict::ParamDict = ParamDict(TrackParams => TrackParams(MattStandard()))
 end
 
 mutable struct QuadParams{T <: Number} <: Parameters
@@ -35,13 +36,24 @@ mutable struct QuadParams{T <: Number} <: Parameters
   end
 end
 
-Base.eltype(pg::QuadParams{T}) where {T} = T
-
 mutable struct LengthParams{T <: Number} <: Parameters
   L::T
 end
 
+abstract type TrackingMethod end
+struct MattStandard <: TrackingMethod end
+# This is just a first idea for handling tracking open to suggestions
+struct DiffEq <: TrackingMethod
+  ds::Float64
+end
+
+mutable struct TrackParams{T<:TrackingMethod} <: Parameters
+  tracking_method::T
+end
+
+Base.eltype(pg::QuadParams{T}) where {T} = T
 Base.eltype(pg::LengthParams{T}) where {T} = T
+Base.eltype(pg::TrackParams{T}) where {T} = T
 
 function Base.getproperty(ele::LatElement, key::Symbol)
   if key == :pdict
@@ -49,7 +61,7 @@ function Base.getproperty(ele::LatElement, key::Symbol)
   elseif haskey(PARAMS_MAP, key) # To get parameters struct
     return getindex(ele.pdict, PARAMS_MAP[key])
   else  # To get a specific parameter in a parameter struct
-    return getindex(ele.pdict, PARAMS_FIELDS_MAP[key])
+    return getfield(getindex(ele.pdict, PARAMS_FIELDS_MAP[key]), key)
   end
 end
 
@@ -82,10 +94,12 @@ end
 const PARAMS_FIELDS_MAP = Dict{Symbol,Type{<:Parameters}}(
   :Kn1 => QuadParams, 
   :tilt => QuadParams,
-  :L => LengthParams
+  :L => LengthParams,
+  :tracking_method => TrackParams
 )
 
 const PARAMS_MAP = Dict{Symbol,Type{<:Parameters}}(
   :QuadParams => QuadParams,
-  :LengthParams => LengthParams
+  :LengthParams => LengthParams,
+  :TrackParams => TrackParams
 )

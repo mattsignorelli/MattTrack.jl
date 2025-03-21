@@ -7,7 +7,7 @@ import GTPSA: sincu, sinhcu
 include("utils.jl")
 include("element.jl")
 
-#=
+
 struct Bunch{T <: Number}
   x::Vector{T}
   px::Vector{T}
@@ -21,7 +21,10 @@ end
 
 function make_lat(n::Integer=1; Kn1=0.36, L_quad=0.5, L_drift=1.)
   function make_matt_ele(Kn1, L)
-    return LatticeElement(Params(Kn1, L), MattStandard())
+    ele = LatElement()
+    ele.QuadParams = QuadParams(Kn1, 0.)
+    ele.LengthParams = LengthParams(L)
+    return ele
   end
 
   fodo = [make_matt_ele(Kn1, L_quad), make_matt_ele(0., L_drift),
@@ -30,7 +33,7 @@ function make_lat(n::Integer=1; Kn1=0.36, L_quad=0.5, L_drift=1.)
   return lat
 end
 
-function track!(bunch::Bunch, lat::Vector{<:LatticeElement})
+function track!(bunch::Bunch, lat::Vector{<:LatElement})
   tmp = zero(bunch.x)
   for ele in lat
     track!(bunch, ele, tmp)
@@ -38,7 +41,7 @@ function track!(bunch::Bunch, lat::Vector{<:LatticeElement})
   return bunch
 end
 
-function track!(bunch::Bunch, ele::LatticeElement, tmp=nothing)
+function track!(bunch::Bunch, ele::LatElement, tmp=nothing)
   return track!(bunch, ele.tracking_method, ele.params, tmp) # Function barrier technique
 end
 
