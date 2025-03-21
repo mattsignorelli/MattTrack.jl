@@ -132,28 +132,3 @@ const BMULTIPOLE_KEY_MAP = Dict{Symbol, Tuple{Int,Symbol}}(
   :tilt20 => (20, :tilt),
   :tilt21 => (21, :tilt), 
 )
-
-const BMULTIPOLE_PROPERTIES_MAP = Dict{Int, Tuple{Symbol,Symbol}}(
-  0 =>  (:Kn0 , :tilt0 ), 
-  1 =>  (:Kn1 , :tilt1 ),
-  2 =>  (:Kn2 , :tilt2 ),
-  3 =>  (:Kn3 , :tilt3 ),
-  4 =>  (:Kn4 , :tilt4 ),
-  5 =>  (:Kn5 , :tilt5 ),
-  6 =>  (:Kn6 , :tilt6 ),
-  7 =>  (:Kn7 , :tilt7 ),
-  8 =>  (:Kn8 , :tilt8 ),
-  9 =>  (:Kn9 , :tilt9 ),
-  10 => (:Kn10, :tilt10),
-  11 => (:Kn11, :tilt11),
-  12 => (:Kn12, :tilt12),
-  13 => (:Kn13, :tilt13),
-  14 => (:Kn14, :tilt14),
-  15 => (:Kn15, :tilt15),
-  16 => (:Kn16, :tilt16),
-  17 => (:Kn17, :tilt17),
-  18 => (:Kn18, :tilt18),
-  19 => (:Kn19, :tilt19),
-  20 => (:Kn20, :tilt20),
-  21 => (:Kn21, :tilt21)
-)

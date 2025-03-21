@@ -25,7 +25,16 @@ function Base.setindex!(h::ParamDict, v::AbstractParams, key::Type{<:AbstractPar
 end
 
 @kwdef struct LatElement
-  pdict::ParamDict = ParamDict(UniversalParams => UniversalParams(MattStandard(), 0.0))
+  pdict::ParamDict = ParamDict(UniversalParams => UniversalParams())
+end
+
+function LatElement(class::String; kwargs...)
+  ele = LatElement()
+  ele.class = class
+  for (k, v) in kwargs
+    setproperty!(ele, k, v)
+  end
+  return ele
 end
 
 include("multipole.jl")
@@ -37,9 +46,10 @@ struct DiffEq <: TrackingMethod
   ds::Float64
 end
 
-mutable struct UniversalParams{T<:TrackingMethod, U<:Number} <: AbstractParams
-  tracking_method::T
-  L::U
+@kwdef mutable struct UniversalParams{T<:TrackingMethod, U<:Number} <: AbstractParams
+  tracking_method::T = MattStandard()
+  L::U               = 0.0
+  class::String      = "Marker"
 end
 
 # Use Accessors here for default bc super convenient for replacing entire (even mutable) type
@@ -64,9 +74,13 @@ function Base.setproperty!(ele::LatElement, key::Symbol, value)
   if haskey(PARAMS_MAP, key)
     setindex!(ele.pdict, value, PARAMS_MAP[key])
   else
-    p = getindex(ele.pdict, PARAMS_FIELDS_MAP[key])
-    # Function barrier for speed
-    _setproperty!(ele.pdict, p, key, value)
+    if !haskey(ele.pdict, PARAMS_FIELDS_MAP[key])
+      p = getindex(ele.pdict, PARAMS_FIELDS_MAP[key])
+      # Function barrier for speed
+      _setproperty!(ele.pdict, p, key, value)
+    else
+
+    end
   end
 end
 
@@ -140,7 +154,8 @@ const PARAMS_FIELDS_MAP = Dict{Symbol,Type{<:AbstractParams}}(
   :tilt21 => BMultipoleParams,
 
   :L => UniversalParams,
-  :tracking_method => UniversalParams
+  :tracking_method => UniversalParams,
+  :class => UniversalParams
 )
 
 const PARAMS_MAP = Dict{Symbol,Type{<:AbstractParams}}(
