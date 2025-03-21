@@ -1,5 +1,5 @@
 module MattTrack
-export MattStandard, Parameters, LatElement, Bunch, make_lat, track!, ParamDict, LengthParams, QuadParams
+export MattStandard, AbstractParams, LatElement, Bunch, make_lat, track!, ParamDict, UniversalParams, BMultipoleParams, BMultipole
 
 using GTPSA, Accessors
 import GTPSA: sincu, sinhcu
@@ -7,7 +7,7 @@ import GTPSA: sincu, sinhcu
 include("utils.jl")
 include("element.jl")
 
-
+#=
 struct Bunch{T <: Number}
   x::Vector{T}
   px::Vector{T}
